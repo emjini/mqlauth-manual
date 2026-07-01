@@ -1,0 +1,11 @@
+node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# 素材フォルダはGit外（サイズ大きい＆一時ファイル）
+_source/
+
+# ログ・一時ファイル
+*.log
+.DS_Store
+Thumbs.db

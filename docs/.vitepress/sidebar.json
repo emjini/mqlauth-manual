@@ -1,0 +1,306 @@
+{
+  "/advanced/": [
+    {
+      "text": "応用マニュアル",
+      "collapsed": false,
+      "items": [
+        {
+          "text": "MQLAuth管理画面の使い方",
+          "collapsed": false,
+          "link": "/advanced/webservicemanual/",
+          "items": [
+            {
+              "text": "登録メールアドレスの変更方法",
+              "link": "/advanced/webservicemanual/web002"
+            },
+            {
+              "text": "有料プランへの移行方法",
+              "link": "/advanced/webservicemanual/web001"
+            }
+          ]
+        },
+        {
+          "text": "様々な実装ケース",
+          "collapsed": false,
+          "link": "/advanced/practice/",
+          "items": [
+            {
+              "text": "利用期限付きのEA等を設定する",
+              "link": "/advanced/practice/practice01"
+            },
+            {
+              "text": "複数の異なるEAを同じ認証情報に紐づける",
+              "link": "/advanced/practice/複数の異なるeaを同じ認証情報に紐づける"
+            },
+            {
+              "text": "特定のユーザーの利用を停止する",
+              "link": "/advanced/practice/practice2"
+            },
+            {
+              "text": "アクセスする毎にデータの取得を行う",
+              "link": "/advanced/practice/practice3"
+            },
+            {
+              "text": "特定のユーザーの口座番号変更機能を無効化する",
+              "link": "/advanced/practice/特定のユーザーの口座番号変更機能を無効化する"
+            }
+          ]
+        },
+        {
+          "text": "EA利用者向け機能",
+          "collapsed": false,
+          "link": "/advanced/userfunction/",
+          "items": [
+            {
+              "text": "EA利用者等自身で口座番号を変更する手順",
+              "link": "/advanced/userfunction/userfunction01"
+            }
+          ]
+        },
+        {
+          "text": "料金・有料プラン",
+          "collapsed": false,
+          "link": "/advanced/plan/",
+          "items": [
+            {
+              "text": "無料・有料プランの範囲",
+              "link": "/advanced/plan/plan01"
+            },
+            {
+              "text": "有料プラン利用料金",
+              "link": "/advanced/plan/plan02"
+            },
+            {
+              "text": "有料プランのご請求日",
+              "link": "/advanced/plan/plan03"
+            },
+            {
+              "text": "有料プランの解約",
+              "link": "/advanced/plan/plan04"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "/manual/": [
+    {
+      "text": "基本マニュアル",
+      "collapsed": false,
+      "items": [
+        {
+          "text": "MQLAuthの概要",
+          "collapsed": false,
+          "link": "/manual/getting-started/",
+          "items": [
+            {
+              "text": "MQLAuthとは？",
+              "link": "/manual/getting-started/概要"
+            },
+            {
+              "text": "MQLAuthの仕組み",
+              "link": "/manual/getting-started/仕組み"
+            },
+            {
+              "text": "MQLAuthライブラリとは？",
+              "link": "/manual/getting-started/mqlauthライブラリとは？"
+            }
+          ]
+        },
+        {
+          "text": "MQLAuthの機能",
+          "collapsed": false,
+          "link": "/manual/mqlauthの機能/",
+          "items": [
+            {
+              "text": "口座番号・パスワード認証機能",
+              "link": "/manual/mqlauthの機能/ea等にアクセス認証を付与する機能"
+            },
+            {
+              "text": "EA利用者自身で登録口座番号を変更する機能",
+              "link": "/manual/mqlauthの機能/ea利用者自身で登録口座番号を変更する機能"
+            },
+            {
+              "text": "アップデート通知機能",
+              "link": "/manual/mqlauthの機能/ea等が更新された際にmt4上で通知する機能"
+            },
+            {
+              "text": "体験版機能",
+              "link": "/manual/mqlauthの機能/体験版機能"
+            },
+            {
+              "text": "一斉メッセージ機能",
+              "link": "/manual/mqlauthの機能/eaの利用者に一斉にメッセージを送信する機能"
+            },
+            {
+              "text": "個別メッセージ機能",
+              "link": "/manual/mqlauthの機能/eaの利用者個別に異なるメッセージを送信する機能"
+            },
+            {
+              "text": "PayPal連携機能",
+              "link": "/manual/mqlauthの機能/paypal決済とアクセス認証を連動させる機能"
+            },
+            {
+              "text": "画像表示機能",
+              "link": "/manual/mqlauthの機能/画像表示機能"
+            },
+            {
+              "text": "ブラウザオープン機能",
+              "link": "/manual/mqlauthの機能/ブラウザオープン機能"
+            },
+            {
+              "text": "MT4時間-日本時間相互変換機能",
+              "link": "/manual/mqlauthの機能/mt4時間-日本時間相互変換機能"
+            },
+            {
+              "text": "LINE通知機能",
+              "link": "/manual/mqlauthの機能/line通知機能"
+            }
+          ]
+        },
+        {
+          "text": "MQLAuthを実装する手順",
+          "collapsed": false,
+          "link": "/manual/manual03/",
+          "items": [
+            {
+              "text": "MQLAuthへの利用登録",
+              "link": "/manual/manual03/section01"
+            },
+            {
+              "text": "MQLAuthにEAを登録",
+              "link": "/manual/manual03/section02"
+            },
+            {
+              "text": "MQLAuthインクルードファイルのダウンロード",
+              "link": "/manual/manual03/section03"
+            },
+            {
+              "text": "EAのソースコードに認証用のコードを追加",
+              "link": "/manual/manual03/section04"
+            },
+            {
+              "text": "MQLAuthに口座縛りをする口座番号を登録",
+              "link": "/manual/manual03/section05"
+            }
+          ]
+        },
+        {
+          "text": "注意点",
+          "collapsed": false,
+          "link": "/manual/注意点/",
+          "items": [
+            {
+              "text": "「DLLの使用を許可する」を忘れずに",
+              "link": "/manual/注意点/「dllの使用を許可する」を忘れずに"
+            },
+            {
+              "text": "認証サーバアクセスの制限について",
+              "link": "/manual/注意点/認証サーバアクセスの制限について"
+            },
+            {
+              "text": "口座番号認証を使用する上での注意点",
+              "link": "/manual/注意点/口座番号認証を使用する上での注意点"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "/reference/": [
+    {
+      "text": "リファレンス",
+      "collapsed": false,
+      "items": [
+        {
+          "text": "認証関数",
+          "collapsed": false,
+          "link": "/reference/auth_func/",
+          "items": [
+            {
+              "text": "口座番号認証(bool)[AuthByAccountNumber_ReturnBool]",
+              "link": "/reference/auth_func/authbyaccountnumber_returnbool"
+            },
+            {
+              "text": "口座番号認証(DateTime)[AuthByAccountNumber_ReturnDatetime]",
+              "link": "/reference/auth_func/口座番号認証datetimeauthbyaccountnumber_returndatetime"
+            },
+            {
+              "text": "体験版機能付口座番号認証(DateTime)[AuthByAccountNumberWithAddUser_ReturnDatetime]",
+              "link": "/reference/auth_func/authbyaccountnumber_returndatetime"
+            },
+            {
+              "text": "パスワード認証(bool)[AuthByPassword_ReturnBool]",
+              "link": "/reference/auth_func/パスワード認証boolauthbypassword_returnbool"
+            },
+            {
+              "text": "パスワード認証(DateTime)[AuthByPassword_ReturnDatetime]",
+              "link": "/reference/auth_func/パスワード認証datetimeauthbypassword_returndatetime"
+            }
+          ]
+        },
+        {
+          "text": "情報取得関数",
+          "collapsed": false,
+          "link": "/reference/情報取得関数/",
+          "items": [
+            {
+              "text": "最新バージョン取得[Auth_GetNewestVersion]",
+              "link": "/reference/情報取得関数/最新バージョン取得auth_getnewestversion"
+            },
+            {
+              "text": "一斉メッセージ取得[Auth_GetApplicationMessage]",
+              "link": "/reference/情報取得関数/auth_getapplicationmessage"
+            },
+            {
+              "text": "個別メッセージ取得(口座番号認証ユーザー)[Auth_GetUserMessageByAccountNumber]",
+              "link": "/reference/情報取得関数/auth_getusermessagebyaccountnumber"
+            },
+            {
+              "text": "個別メッセージ取得(パスワード認証ユーザー)[Auth_GetUserMessageByPassword]",
+              "link": "/reference/情報取得関数/auth_getusermessagebypassword"
+            }
+          ]
+        },
+        {
+          "text": "便利機能関数",
+          "collapsed": false,
+          "link": "/reference/便利機能関数/",
+          "items": [
+            {
+              "text": "BMP画像表示[Auth_ShowBMPIMG]",
+              "link": "/reference/便利機能関数/auth_showbmpimg"
+            },
+            {
+              "text": "MT4時間を日本時間に変換[Auth_ServerTimeToJapanTime]",
+              "link": "/reference/便利機能関数/auth_servertimetojapantime"
+            },
+            {
+              "text": "日本時間をMT4時間に変換[Auth_JapanTimeToServerTime]",
+              "link": "/reference/便利機能関数/auth_japantimetoservertime"
+            },
+            {
+              "text": "LINE通知[Auth_LineNotify]",
+              "link": "/reference/便利機能関数/line通知"
+            }
+          ]
+        },
+        {
+          "text": "列挙型",
+          "collapsed": false,
+          "link": "/reference/enum/",
+          "items": [
+            {
+              "text": "MQLAUTHENUM_GMTOFFSET列挙型",
+              "link": "/reference/enum/mqlauthenum_gmtoffset"
+            },
+            {
+              "text": "MQLAUTHENUM_SUMMERTIMECOUNTRY列挙型",
+              "link": "/reference/enum/mqlauthenum_summertimecountry"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
