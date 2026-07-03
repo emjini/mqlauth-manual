@@ -7,7 +7,7 @@ Claude Code、Cursor、ChatGPT、GitHub CopilotなどのAIコーディングア�
 
 MQLAuthでは、AIがそのまま読んで実装できる**AI向け実装ガイド**を公開しています。
 
-- AI向け実装ガイド: <https://manual.mql-auth.com/llms-install.md>
+- AI向け実装ガイド: <https://mqlauth-manual.pages.dev/llms-install.md>
 
 このガイドに従ってAIが実装すると、口座番号認証に加えて、利用期限の表示、一斉・個別メッセージ、アップデート通知、体験版機能（オプション）などのMQLAuthの標準機能一式が組み込まれます。
 
@@ -26,7 +26,7 @@ AIに依頼する前に、以下の3つを済ませておいてください。
 ```text
 以下の実装ガイドを読んで、私のMQL4/MQL5ソースコードにMQLAuthの認証を実装してください。
 
-実装ガイド: https://manual.mql-auth.com/llms-install.md
+実装ガイド: https://mqlauth-manual.pages.dev/llms-install.md
 （Webにアクセスできない場合は、その旨を伝えてください。ガイドの本文を貼り付けます）
 
 - MQLAuth ID: ここに自分のMQLAuth IDを入れる

@@ -1,6 +1,6 @@
 # MQLAuth 実装ガイド（AIコーディングアシスタント向け）
 
-このドキュメントは、AIコーディングアシスタント（Claude Code、Cursor、ChatGPT、GitHub Copilot等）が、ユーザーのMQL4/MQL5ソースコードにMQLAuth認証を実装するための手順書です。人間向けマニュアルは https://manual.mql-auth.com/ にあります。
+このドキュメントは、AIコーディングアシスタント（Claude Code、Cursor、ChatGPT、GitHub Copilot等）が、ユーザーのMQL4/MQL5ソースコードにMQLAuth認証を実装するための手順書です。人間向けマニュアルは https://mqlauth-manual.pages.dev/ にあります。
 
 対応バージョン: MQLAuth.mqh v1.09以降（2026年7月時点の配布版）
 
