@@ -180,6 +180,10 @@
               "link": "/manual/manual03/section04"
             },
             {
+              "text": "AIアシスタントに実装させる",
+              "link": "/manual/manual03/ai-implementation"
+            },
+            {
               "text": "MQLAuthに口座縛りをする口座番号を登録",
               "link": "/manual/manual03/section05"
             }
