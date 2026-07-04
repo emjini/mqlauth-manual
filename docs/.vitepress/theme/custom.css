@@ -1,0 +1,10 @@
+/* サイドバーを少し広げて長い関数名を読みやすく（デフォルト272px） */
+:root {
+  --vp-sidebar-width: 300px;
+}
+
+/* サイドバー項目: [AuthByAccountNumber_ReturnBool] のような
+   スペースなしの長い関数名も折り返して見切れを防ぐ */
+.VPSidebarItem .text {
+  overflow-wrap: anywhere;
+}

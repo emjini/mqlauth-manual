@@ -222,23 +222,23 @@
           "link": "/reference/auth_func/",
           "items": [
             {
-              "text": "口座番号認証(bool)[AuthByAccountNumber_ReturnBool]",
+              "text": "口座番号認証(bool) [AuthByAccountNumber_ReturnBool]",
               "link": "/reference/auth_func/authbyaccountnumber_returnbool"
             },
             {
-              "text": "口座番号認証(DateTime)[AuthByAccountNumber_ReturnDatetime]",
+              "text": "口座番号認証(DateTime) [AuthByAccountNumber_ReturnDatetime]",
               "link": "/reference/auth_func/口座番号認証datetimeauthbyaccountnumber_returndatetime"
             },
             {
-              "text": "体験版機能付口座番号認証(DateTime)[AuthByAccountNumberWithAddUser_ReturnDatetime]",
+              "text": "体験版機能付口座番号認証(DateTime) [AuthByAccountNumberWithAddUser_ReturnDatetime]",
               "link": "/reference/auth_func/authbyaccountnumber_returndatetime"
             },
             {
-              "text": "パスワード認証(bool)[AuthByPassword_ReturnBool]",
+              "text": "パスワード認証(bool) [AuthByPassword_ReturnBool]",
               "link": "/reference/auth_func/パスワード認証boolauthbypassword_returnbool"
             },
             {
-              "text": "パスワード認証(DateTime)[AuthByPassword_ReturnDatetime]",
+              "text": "パスワード認証(DateTime) [AuthByPassword_ReturnDatetime]",
               "link": "/reference/auth_func/パスワード認証datetimeauthbypassword_returndatetime"
             }
           ]
@@ -249,19 +249,19 @@
           "link": "/reference/情報取得関数/",
           "items": [
             {
-              "text": "最新バージョン取得[Auth_GetNewestVersion]",
+              "text": "最新バージョン取得 [Auth_GetNewestVersion]",
               "link": "/reference/情報取得関数/最新バージョン取得auth_getnewestversion"
             },
             {
-              "text": "一斉メッセージ取得[Auth_GetApplicationMessage]",
+              "text": "一斉メッセージ取得 [Auth_GetApplicationMessage]",
               "link": "/reference/情報取得関数/auth_getapplicationmessage"
             },
             {
-              "text": "個別メッセージ取得(口座番号認証ユーザー)[Auth_GetUserMessageByAccountNumber]",
+              "text": "個別メッセージ取得(口座番号認証ユーザー) [Auth_GetUserMessageByAccountNumber]",
               "link": "/reference/情報取得関数/auth_getusermessagebyaccountnumber"
             },
             {
-              "text": "個別メッセージ取得(パスワード認証ユーザー)[Auth_GetUserMessageByPassword]",
+              "text": "個別メッセージ取得(パスワード認証ユーザー) [Auth_GetUserMessageByPassword]",
               "link": "/reference/情報取得関数/auth_getusermessagebypassword"
             }
           ]
@@ -272,19 +272,19 @@
           "link": "/reference/便利機能関数/",
           "items": [
             {
-              "text": "BMP画像表示[Auth_ShowBMPIMG]",
+              "text": "BMP画像表示 [Auth_ShowBMPIMG]",
               "link": "/reference/便利機能関数/auth_showbmpimg"
             },
             {
-              "text": "MT4時間を日本時間に変換[Auth_ServerTimeToJapanTime]",
+              "text": "MT4時間を日本時間に変換 [Auth_ServerTimeToJapanTime]",
               "link": "/reference/便利機能関数/auth_servertimetojapantime"
             },
             {
-              "text": "日本時間をMT4時間に変換[Auth_JapanTimeToServerTime]",
+              "text": "日本時間をMT4時間に変換 [Auth_JapanTimeToServerTime]",
               "link": "/reference/便利機能関数/auth_japantimetoservertime"
             },
             {
-              "text": "LINE通知[Auth_LineNotify]",
+              "text": "LINE通知 [Auth_LineNotify]",
               "link": "/reference/便利機能関数/line通知"
             }
           ]
