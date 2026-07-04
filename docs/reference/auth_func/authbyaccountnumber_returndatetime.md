@@ -1,7 +1,7 @@
 ---
 title: "体験版機能付口座番号認証(DateTime)[AuthByAccountNumberWithAddUser_ReturnDatetime]"
 weDocsId: 5805
-modified: 2021-07-10T11:40:03
+modified: 2026-07-04T23:10:00
 originalUrl: https://manual.mql-auth.com/docs/reference/auth_func/authbyaccountnumber_returndatetime/
 ---
 # 体験版機能付口座番号認証(DateTime)[AuthByAccountNumberWithAddUser_ReturnDatetime]
@@ -13,6 +13,10 @@ EA等を利用する口座番号が認証可能な期限を取得し、結果を
 ##### 体験版機能を使う際の注意
 
 この関数を使うには、EA・インジケーターの登録画面で「自動体験版作成機能を有効にする」にチェックを入れる必要があります。チェックを入れていない場合は、認証が失敗します。
+
+##### 体験版の期限は最長1ヶ月
+
+新たに作成される体験版ユーザーの利用期限は、**サーバー側で「現在時刻から1ヶ月後」を上限として調整されます**。periodに1ヶ月を超える日数（例: 90）を指定しても、実際に設定される利用期限は最長で1ヶ月後までとなります。1ヶ月を超える利用期間を設定したい場合は、管理画面からユーザーを登録・延長してください。
 
 ## 関数書式
 
@@ -34,7 +38,7 @@ ManagerName
 ApplicationName  
    [in] EA等のMQLAuthに登録した名称  
 period  
-   [in] 新たに作成される体験版ユーザーの期間
+   [in] 新たに作成される体験版ユーザーの期間（日数）。最長で「現在時刻から1ヶ月後」まで（下記参照）
 
 ## 戻り値
 
