@@ -137,10 +137,6 @@
               "link": "/manual/mqlauthの機能/eaの利用者個別に異なるメッセージを送信する機能"
             },
             {
-              "text": "PayPal連携機能",
-              "link": "/manual/mqlauthの機能/paypal決済とアクセス認証を連動させる機能"
-            },
-            {
               "text": "画像表示機能",
               "link": "/manual/mqlauthの機能/画像表示機能"
             },
@@ -151,10 +147,6 @@
             {
               "text": "MT4時間-日本時間相互変換機能",
               "link": "/manual/mqlauthの機能/mt4時間-日本時間相互変換機能"
-            },
-            {
-              "text": "LINE通知機能",
-              "link": "/manual/mqlauthの機能/line通知機能"
             }
           ]
         },
@@ -282,10 +274,6 @@
             {
               "text": "日本時間をMT4時間に変換 [Auth_JapanTimeToServerTime]",
               "link": "/reference/便利機能関数/auth_japantimetoservertime"
-            },
-            {
-              "text": "LINE通知 [Auth_LineNotify]",
-              "link": "/reference/便利機能関数/line通知"
             }
           ]
         },
