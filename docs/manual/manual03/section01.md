@@ -1,28 +1,28 @@
 ---
 title: "MQLAuthへの利用登録"
 weDocsId: 5601
-modified: 2021-07-07T19:13:01
+modified: 2026-07-10T13:30:00
 originalUrl: https://manual.mql-auth.com/docs/manual/manual03/section01/
 ---
 # MQLAuthへの利用登録
 
 ## ステップ1 MQLAuthにアクセス
 
-https://mql-auth.com/にアクセスし、サイト右上の「利用登録」をクリックします。
+https://mql-auth.com/にアクセスし、サイト右上の「無料で始める」をクリックします。
 
-![](/images/2021/07/2021-07-07_17h15_58.png)
+![](/images/v2/lp-top.png)
 
 ## ステップ2 必要事項の入力
 
-メールアドレス、パスワードを入力し、「登録する」ボタンをクリックします。
+メールアドレス、パスワードを入力し、利用規約に同意して「登録する」ボタンをクリックします。
 
-![](/images/2021/07/2021-07-07_17h22_33.png)
+![](/images/v2/register-form.png)
 
 ## ステップ3 メールアドレス確認用のメール送信
 
 メールアドレス確認用のメールが送信されます。
 
-![](/images/2021/07/manual_13.png)
+![](/images/v2/register-confirmation.png)
 
 ## ステップ4 メールアドレスの認証
 
@@ -32,29 +32,22 @@ https://mql-auth.com/にアクセスし、サイト右上の「利用登録」�
 
 ![](/images/2021/07/2021-07-07_17h26_58.png)
 
-## ステップ5 メールアドレスの認証完了
+## ステップ5 MQLAuthにログイン
 
-これでアカウントの作成が完了しました。続いて「ログイン」をクリックします。
+メールアドレスの認証が完了したら、先ほど登録した情報でログインします。
 
-![](/images/2021/07/2021-07-07_17h28_51.png)
+![](/images/v2/login.png)
 
-## ステップ6 MQLAuthにログイン
+## ステップ6 ダッシュボードが表示される
 
-先ほど登録した情報でログインします。
+ログインすると、管理画面のダッシュボードが表示されます。
 
-![](/images/2021/07/manual_16.png)
+![](/images/v2/dashboard.png)
 
-## ステップ7 マイページに移動
+## ステップ7 MQLAuth IDの確認
 
-ログインしたら、マイページに移動します。
+ダッシュボードの「MQLAuth ID」を「コピー」ボタンでコピーし、メモしておきます。これがEA・インジケーターの提供者を識別するIDになります。後ほどEA・インジケーターのソースコードに記入します。
 
-![](/images/2021/07/manual_17.png)
+![](/images/v2/dashboard-mqlauthid.png)
 
-## ステップ8 MQLAuth IDの確認
-
-「MQLAuth ID」という項目があるので、これをメモしておきます。これがインジケーターの提供者を識別する番号になります。後ほどインジケーターのソースコードに記入します。
-
-![](/images/2021/07/manual_18.png)
-
-[次の項目
-MQLAuthにEAを登録 >>](https://manual.mql-auth.com/docs/rogan-documentation/manual03/section02/)
+[次の項目 MQLAuthにEAを登録 >>](./section02.md)

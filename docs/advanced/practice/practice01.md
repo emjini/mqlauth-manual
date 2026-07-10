@@ -1,14 +1,14 @@
 ---
 title: "利用期限付きのEA等を設定する"
 weDocsId: 5870
-modified: 2024-02-26T10:46:20
+modified: 2026-07-10T13:30:00
 originalUrl: https://manual.mql-auth.com/docs/practicalmanual/practice/practice01/
 ---
 # 利用期限付きのEA等を設定する
 
-次のようなユーザーを作り、EA等にパスワード認証を付けることで、期限付きのEA等を設定することができます。
+次のように利用期限とパスワード（パスワード認証用）を設定したユーザーを作り、EA等にパスワード認証を付けることで、期限付きのEA等を設定することができます。
 
-![](/images/2021/07/2021-07-10_12h15_20.png)
+![](/images/v2/users-create-filled.png)
 
 以下のようにパスワード入力用のパラメータを用意し、OnInit()内でパスワード認証用のコードを書くことで、EA等が期限付きになります。
 
