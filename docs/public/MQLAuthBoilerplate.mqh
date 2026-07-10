@@ -14,6 +14,7 @@
 //
 // 対応: MQL4 / MQL5 両対応（MQLAuth.mqh v1.09以降）
 // Version 1.01 (2026-07-10) - PayPal連携（未使用機能）を削除、内部リファクタ（動作への影響なし）
+// Version 1.02 (2026-07-10) - 重複コードのヘルパー関数化（表示内容・動作は変更なし）
 //+------------------------------------------------------------------+
 #ifndef __MQLAUTH_BOILERPLATE_MQH__
 #define __MQLAUTH_BOILERPLATE_MQH__
@@ -67,7 +68,6 @@ string _updateurl; // アップデートのお知らせをクリックしたと�
 string _newestVersion;
 //--- アップデートのお知らせに利用する変数
 
-bool _sysfac_isChecked = false;
 datetime _sysfac_indicatorPeriod;//利用期限
 string _randId;// 認証ファイルの名称
 
@@ -76,7 +76,6 @@ string _randId;// 認証ファイルの名称
 //+------------------------------------------------------------------+
 void sysfac_onchartevent(int id, string sparam) {
    string _labelUpdateMessage = _prefix + "updateMessage"; // アップデートのお知らせを表示するラベル名
-   string _labelUpdateMessage2 = _prefix + "updateMessage2"; // アップデートのお知らせを表示するラベル名
    string _labelApplicationMessage = _prefix + "applicationMessage"; // メッセージを表示するラベル名
    string _labelUserMessage = _prefix + "userMessage"; // メッセージを表示するラベル名
    string _objectLogo = _prefix + "SYSFAC_LOGO"; // ロゴを表示するラベル名
@@ -137,6 +136,26 @@ bool MQLAuth_CheckDLLsAllowed() {
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+//|  認証エラーラベルを1行分作成する（内部ヘルパー）                      |
+//+------------------------------------------------------------------+
+void MQLAuth_CreateErrorLabel(string name, int yOffset, string text) {
+   ObjectCreate(ChartID(), name, OBJ_LABEL, 0, 0, 0);
+   ObjectSetInteger(ChartID(), name, OBJPROP_BACK, false);
+   ObjectSetInteger(ChartID(), name, OBJPROP_SELECTABLE, false);
+   ObjectSetInteger(ChartID(), name, OBJPROP_SELECTED, false);
+   ObjectSetInteger(ChartID(), name, OBJPROP_HIDDEN, true);
+   ObjectSetInteger(ChartID(), name, OBJPROP_CORNER, CORNER_LEFT_LOWER);
+   ObjectSetInteger(ChartID(), name, OBJPROP_XDISTANCE, _messageXDistance);
+   ObjectSetInteger(ChartID(), name, OBJPROP_YDISTANCE, _messageYDistance + yOffset);
+   ObjectSetString(ChartID(), name, OBJPROP_TEXT, text);
+   ObjectSetInteger(ChartID(), name, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+   ObjectSetString(ChartID(), name, OBJPROP_FONT, MQLAUTH_FONT_NAME);
+   ObjectSetInteger(ChartID(), name, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
+}
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 void MQLAuth_ShowErrorMessage(int errorcode, string errormessages) {
    string _ObjectAuthMessage1 = _prefix + "objectAuthMessage1"; // 認証メッセージを表示するラベル名1
    string _ObjectAuthMessage2 = _prefix + "objectAuthMessage2"; // 認証メッセージを表示するラベル名2
@@ -145,52 +164,15 @@ void MQLAuth_ShowErrorMessage(int errorcode, string errormessages) {
    string errormessage[];
    StringSplit(errormessages, ',', errormessage);
 
-   ObjectCreate(ChartID(), _ObjectAuthMessage1, OBJ_LABEL, 0, 0, 0);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_BACK, false);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTABLE, false);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTED, false);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_HIDDEN, true);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_XDISTANCE, _messageXDistance);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
-   ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_TEXT, "[" + APPLICATION_NAME + "] Error:" + (string)errorcode);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-   ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-
-   ObjectCreate(ChartID(), _ObjectAuthMessage2, OBJ_LABEL, 0, 0, 0);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_BACK, false);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_SELECTABLE, false);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_SELECTED, false);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_HIDDEN, true);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_XDISTANCE, _messageXDistance);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT);
-   ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_TEXT, errormessage[0]);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-   ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-
-   ObjectCreate(ChartID(), _ObjectAuthMessage3, OBJ_LABEL, 0, 0, 0);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_BACK, false);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_SELECTABLE, false);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_SELECTED, false);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_HIDDEN, true);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_XDISTANCE, _messageXDistance);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_YDISTANCE, _messageYDistance);
-   ObjectSetString(ChartID(), _ObjectAuthMessage3, OBJPROP_TEXT, errormessage[1]);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-   ObjectSetString(ChartID(), _ObjectAuthMessage3, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
+   MQLAuth_CreateErrorLabel(_ObjectAuthMessage1, MQLAUTH_LINE_HEIGHT * 2, "[" + APPLICATION_NAME + "] Error:" + (string)errorcode);
+   MQLAuth_CreateErrorLabel(_ObjectAuthMessage2, MQLAUTH_LINE_HEIGHT, errormessage[0]);
+   MQLAuth_CreateErrorLabel(_ObjectAuthMessage3, 0, errormessage[1]);
 }
 //+------------------------------------------------------------------+
 //|  口座認証のための関数                                               |
 //+------------------------------------------------------------------+
 bool SYSFAC_Auth() {
-   string _ObjectAuthMessage1 = _prefix + "objectAuthMessage1"; // 認証メッセージを表示するラベル名1
    string _ObjectAuthMessage2 = _prefix + "objectAuthMessage2"; // 認証メッセージを表示するラベル名2
-   string _ObjectAuthMessage3 = _prefix + "objectAuthMessage3"; // 認証メッセージを表示するラベル名3
 
    if(!MQLAuth_CheckDLLsAllowed()) return false;
 
@@ -306,16 +288,85 @@ bool SYSFAC_Auth() {
    return true;
 }
 //+------------------------------------------------------------------+
+//|  受信メッセージを行ごとにラベル表示する（内部ヘルパー）               |
+//+------------------------------------------------------------------+
+void MQLAuth_ShowMessageLines(string label, string &message[]) {
+   for(int i = 0; i < ArraySize(message); i++) {
+      ObjectCreate(ChartID(), label + (string)i, OBJ_LABEL, 0, 0, 0);
+      ObjectSetInteger(ChartID(), label + (string)i, OBJPROP_BACK, false);
+      ObjectSetInteger(ChartID(), label + (string)i, OBJPROP_SELECTABLE, false);
+      ObjectSetInteger(ChartID(), label + (string)i, OBJPROP_SELECTED, false);
+      ObjectSetInteger(ChartID(), label + (string)i, OBJPROP_HIDDEN, true);
+      ObjectSetInteger(ChartID(), label + (string)i, OBJPROP_CORNER, CORNER_LEFT_LOWER);
+      ObjectSetInteger(ChartID(), label + (string)i, OBJPROP_ANCHOR, ANCHOR_LEFT_LOWER);
+      ObjectSetInteger(ChartID(), label + (string)i, OBJPROP_XDISTANCE, _messageXDistance);
+      ObjectSetInteger(ChartID(), label + (string)i, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * (ArraySize(message) - 1 - i));
+      ObjectSetString(ChartID(), label + (string)i, OBJPROP_TEXT, message[i]);
+      ObjectSetInteger(ChartID(), label + (string)i, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+      ObjectSetString(ChartID(), label + (string)i, OBJPROP_FONT, MQLAUTH_FONT_NAME);
+      ObjectSetInteger(ChartID(), label + (string)i, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
+   }
+}
+//+------------------------------------------------------------------+
+//|  メッセージ表示終了後の後続表示（更新通知／体験版期限）（内部ヘルパー）|
+//+------------------------------------------------------------------+
+void MQLAuth_ShowFollowupInfo(string labelToClear) {
+   string _labelUpdateMessage = _prefix + "updateMessage"; // アップデートのお知らせを表示するラベル名
+   string _labelUpdateMessage2 = _prefix + "updateMessage2"; // アップデートのお知らせを表示するラベル名
+   string _ObjectAuthMessage1 = _prefix + "objectAuthMessage1"; // 認証メッセージを表示するラベル名1
+
+   ObjectsDeleteAll(ChartID(), labelToClear);
+   if(_newestVersion != "" && StringToDouble(VERSION) < StringToDouble(_newestVersion)) {
+      ObjectCreate(ChartID(), _labelUpdateMessage, OBJ_LABEL, 0, 0, 0);
+      ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_SELECTABLE, false);
+      ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_SELECTED, false);
+      ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_HIDDEN, true);
+      ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_CORNER, CORNER_LEFT_LOWER);
+      ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_XDISTANCE, _messageXDistance);
+      ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
+      ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
+      ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_TEXT, "[" + APPLICATION_NAME + "]新しいバージョン " + _newestVersion + " があります。");
+      ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+      ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_FONT, MQLAUTH_FONT_NAME);
+      ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
+      if(_useUpdateDownloadLink){
+         ObjectCreate(ChartID(), _labelUpdateMessage2, OBJ_LABEL, 0, 0, 0);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_SELECTABLE, false);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_SELECTED, false);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_HIDDEN, true);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_CORNER, CORNER_LEFT_LOWER);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_XDISTANCE, _messageXDistance);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
+         ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_TEXT, "ダウンロードするにはここをクリック");
+         ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+         ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_FONT, MQLAUTH_FONT_NAME);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
+      }
+   } else if(_sysfac_indicatorPeriod - _day * MQLAUTH_SECONDS_PER_DAY <= TimeLocal()) {
+      ObjectCreate(ChartID(), _ObjectAuthMessage1, OBJ_LABEL, 0, 0, 0);
+      ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTABLE, false);
+      ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTED, false);
+      ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_HIDDEN, true);
+      ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_CORNER, CORNER_LEFT_LOWER);
+      ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_XDISTANCE, _messageXDistance);
+      ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
+      ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
+      string date = TimeToString(_sysfac_indicatorPeriod, TIME_DATE | TIME_SECONDS);
+      StringReplace(date, ".", "/");
+      ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_TEXT, "[" + APPLICATION_NAME + "体験版] 利用期限： " + date);
+      ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+      ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_FONT, MQLAUTH_FONT_NAME);
+      ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
+   } else {
+   }
+}
+//+------------------------------------------------------------------+
 //|   メッセージを取得し表示する関数                                       |
 //+------------------------------------------------------------------+
 void SYSFAC_Message() {
-   string _labelUpdateMessage = _prefix + "updateMessage"; // アップデートのお知らせを表示するラベル名
-   string _labelUpdateMessage2 = _prefix + "updateMessage2"; // アップデートのお知らせを表示するラベル名
    string _labelApplicationMessage = _prefix + "applicationMessage"; // メッセージを表示するラベル名
    string _labelUserMessage = _prefix + "userMessage"; // メッセージを表示するラベル名
-   string _ObjectAuthMessage1 = _prefix + "objectAuthMessage1"; // 認証メッセージを表示するラベル名1
-   string _ObjectAuthMessage2 = _prefix + "objectAuthMessage2"; // 認証メッセージを表示するラベル名2
-   string _ObjectPeriodMessage = _prefix + "objectPeriodMessage"; // 期限を表示するラベル名
 
    if(_isAuthorized
          && _useApplicationMessage
@@ -329,42 +380,12 @@ void SYSFAC_Message() {
             StringSplit(messages, '#', result);
             string message[];
             StringSplit(result[0], '\r', message);
-
-            for(int i = 0; i < ArraySize(message); i++) {
-               ObjectCreate(ChartID(), _labelApplicationMessage + (string)i, OBJ_LABEL, 0, 0, 0);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_BACK, false);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_SELECTABLE, false);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_SELECTED, false);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_HIDDEN, true);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_ANCHOR, ANCHOR_LEFT_LOWER);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_XDISTANCE, _messageXDistance);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * (ArraySize(message) - 1 - i));
-               ObjectSetString(ChartID(),  _labelApplicationMessage + (string)i, OBJPROP_TEXT, message[i]);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-               ObjectSetString(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-            }
+            MQLAuth_ShowMessageLines(_labelApplicationMessage, message);
             _applicationMessageurl = result[1];
          } else {
             string message[];
             StringSplit(messages, '\r', message);
-
-            for(int i = 0; i < ArraySize(message); i++) {
-               ObjectCreate(ChartID(), _labelApplicationMessage + (string)i, OBJ_LABEL, 0, 0, 0);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_BACK, false);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_SELECTABLE, false);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_SELECTED, false);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_HIDDEN, true);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_ANCHOR, ANCHOR_LEFT_LOWER);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_XDISTANCE, _messageXDistance);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * (ArraySize(message) - 1 - i));
-               ObjectSetString(ChartID(),  _labelApplicationMessage + (string)i, OBJPROP_TEXT, message[i]);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-               ObjectSetString(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-            }
+            MQLAuth_ShowMessageLines(_labelApplicationMessage, message);
             _applicationMessageurl = "";
          }
          _viewApplicationMessageTime = GetTickCount();
@@ -386,44 +407,14 @@ void SYSFAC_Message() {
             string result[];
             StringSplit(messages, '#', result);
             string message[];
-            StringTrimRight(result[0]);
+            StringTrimRight(result[0]); // 一斉メッセージ側には無い既存の非対称（挙動保存のため維持）
             StringSplit(result[0], '\r', message);
-
-            for(int i = 0; i < ArraySize(message); i++) {
-               ObjectCreate(ChartID(), _labelUserMessage + (string)i, OBJ_LABEL, 0, 0, 0);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_BACK, false);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_SELECTABLE, false);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_SELECTED, false);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_HIDDEN, true);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_ANCHOR, ANCHOR_LEFT_LOWER);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_XDISTANCE, _messageXDistance);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * (ArraySize(message) - 1 - i));
-               ObjectSetString(ChartID(), _labelUserMessage + (string)i, OBJPROP_TEXT, message[i]);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-               ObjectSetString(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-            }
+            MQLAuth_ShowMessageLines(_labelUserMessage, message);
             _userMessageurl = result[1];
          } else {
             string message[];
             StringSplit(messages, '\r', message);
-
-            for(int i = 0; i < ArraySize(message); i++) {
-               ObjectCreate(ChartID(), _labelUserMessage + (string)i, OBJ_LABEL, 0, 0, 0);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_BACK, false);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_SELECTABLE, false);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_SELECTED, false);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_HIDDEN, true);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_ANCHOR, ANCHOR_LEFT_LOWER);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_XDISTANCE, _messageXDistance);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * (ArraySize(message) - 1 - i));
-               ObjectSetString(ChartID(), _labelUserMessage + (string)i, OBJPROP_TEXT, message[i]);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-               ObjectSetString(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-            }
+            MQLAuth_ShowMessageLines(_labelUserMessage, message);
             _userMessageurl = "";
          }
          _viewUserMessageTime = GetTickCount();
@@ -432,97 +423,9 @@ void SYSFAC_Message() {
       }
    }
    if(_useUserMessage && _viewUserMessageTime != 0 && GetTickCount() - _viewUserMessageTime > _userMessageViewSecond * 1000) {
-      ObjectsDeleteAll(ChartID(), _labelUserMessage);
-      if(_newestVersion != "" && StringToDouble(VERSION) < StringToDouble(_newestVersion)) {
-         ObjectCreate(ChartID(), _labelUpdateMessage, OBJ_LABEL, 0, 0, 0);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_SELECTABLE, false);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_SELECTED, false);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_HIDDEN, true);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_XDISTANCE, _messageXDistance);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
-         ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_TEXT, "[" + APPLICATION_NAME + "]新しいバージョン " + _newestVersion + " があります。");
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-         ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-         if(_useUpdateDownloadLink){
-            ObjectCreate(ChartID(), _labelUpdateMessage2, OBJ_LABEL, 0, 0, 0);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_SELECTABLE, false);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_SELECTED, false);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_HIDDEN, true);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_XDISTANCE, _messageXDistance);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
-            ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_TEXT, "ダウンロードするにはここをクリック");
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-            ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-         }
-      } else if(_sysfac_indicatorPeriod - _day * MQLAUTH_SECONDS_PER_DAY <= TimeLocal()) {
-         ObjectCreate(ChartID(), _ObjectAuthMessage1, OBJ_LABEL, 0, 0, 0);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTABLE, false);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTED, false);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_HIDDEN, true);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_XDISTANCE, _messageXDistance);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
-         string date = TimeToString(_sysfac_indicatorPeriod, TIME_DATE | TIME_SECONDS);
-         StringReplace(date, ".", "/");
-         ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_TEXT, "[" + APPLICATION_NAME + "体験版] 利用期限： " + date);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-         ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-      } else {
-      }
+      MQLAuth_ShowFollowupInfo(_labelUserMessage);
    } else if(!_useUserMessage && _viewApplicationMessageTime != 0 && GetTickCount() - _viewApplicationMessageTime > _applicationMessageViewSecond * 1000) {
-      ObjectsDeleteAll(ChartID(), _labelApplicationMessage);
-      if(_newestVersion != "" && StringToDouble(VERSION) < StringToDouble(_newestVersion)) {
-         ObjectCreate(ChartID(), _labelUpdateMessage, OBJ_LABEL, 0, 0, 0);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_SELECTABLE, false);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_SELECTED, false);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_HIDDEN, true);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_XDISTANCE, _messageXDistance);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
-         ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_TEXT, "[" + APPLICATION_NAME + "]新しいバージョン " + _newestVersion + " があります。");
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-         ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-         if(_useUpdateDownloadLink){
-            ObjectCreate(ChartID(), _labelUpdateMessage2, OBJ_LABEL, 0, 0, 0);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_SELECTABLE, false);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_SELECTED, false);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_HIDDEN, true);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_XDISTANCE, _messageXDistance);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
-            ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_TEXT, "ダウンロードするにはここをクリック");
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-            ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-         }
-      } else if(_sysfac_indicatorPeriod - _day * MQLAUTH_SECONDS_PER_DAY <= TimeLocal()) {
-         ObjectCreate(ChartID(), _ObjectAuthMessage1, OBJ_LABEL, 0, 0, 0);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTABLE, false);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTED, false);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_HIDDEN, true);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_XDISTANCE, _messageXDistance);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
-         string date = TimeToString(_sysfac_indicatorPeriod, TIME_DATE | TIME_SECONDS);
-         StringReplace(date, ".", "/");
-         ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_TEXT, "[" + APPLICATION_NAME + "体験版] 利用期限： " + date);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
-         ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_FONT, MQLAUTH_FONT_NAME);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-      } else {
-      }
+      MQLAuth_ShowFollowupInfo(_labelApplicationMessage);
    }
    if(_sysfac_indicatorPeriod <= TimeLocal()) {
       if(FileIsExist("MQLAuth\\" + _randId)) {
