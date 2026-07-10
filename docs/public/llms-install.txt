@@ -2,7 +2,7 @@
 
 このドキュメントは、AIコーディングアシスタント（Claude Code、Cursor、ChatGPT、GitHub Copilot等）が、ユーザーのMQL4/MQL5ソースコードにMQLAuth認証を実装するための手順書です。人間向けマニュアルは https://mqlauth-manual.pages.dev/ にあります。
 
-対応バージョン: MQLAuth.mqh v1.09以降 ＋ MQLAuthBoilerplate.mqh v1.00以降（2026年7月時点の配布版）
+対応バージョン: MQLAuth.mqh v1.09以降 ＋ MQLAuthBoilerplate.mqh v1.01以降（2026年7月時点の配布版）
 
 ## MQLAuthとは
 
@@ -72,7 +72,6 @@
 //#resource "\\Include\\Images\\logo.bmp"
 
 //--- MQLAuth カスタマイズ
-#define PURCHASEURL "" //
 bool _useApplicationMessage = true; // 一斉メッセージを利用する
 int _applicationMessageViewSecond = 8; // 一斉メッセージを消すまでの秒数
 bool _useUserMessage = true; // 個別メッセージを利用する
@@ -80,7 +79,6 @@ int _userMessageViewSecond = 8; // 個別メッセージを消すまでの秒数
 bool _useUpdateMessage = true; // アップデートのお知らせを利用する
 bool _useTrial = false;//体験版機能を使用する
 int _day = 0;//体験版の日数
-bool _usePayPal = false;//PayPal連携を使用する
 bool _useLogo = false; // ロゴを表示する
 string _logourl = ""; //ロゴクリックで開くページ
 bool _useUpdateDownloadLink = false; //新しいバージョンのダウンロードリンクを表示する
@@ -200,7 +198,6 @@ Step 1で追加した「MQLAuth カスタマイズ」ブロックの変数で機
 
 | 変数 | デフォルト | 意味 |
 |---|---|---|
-| `PURCHASEURL` | `""` | PayPal決済ページURL（PayPal連携時のみ設定） |
 | `_useApplicationMessage` | `true` | 一斉メッセージ表示を利用する |
 | `_applicationMessageViewSecond` | `8` | 一斉メッセージを消すまでの秒数 |
 | `_useUserMessage` | `true` | 個別メッセージ表示を利用する |
@@ -208,7 +205,6 @@ Step 1で追加した「MQLAuth カスタマイズ」ブロックの変数で機
 | `_useUpdateMessage` | `true` | アップデート通知を利用する |
 | `_useTrial` | `false` | 体験版機能（未登録口座の自動登録）を使用する |
 | `_day` | `0` | 体験版の日数 |
-| `_usePayPal` | `false` | PayPal連携を使用する |
 | `_useLogo` | `false` | チャートにロゴを表示する（Step 1の `#resource` の有効化も必要） |
 | `_logourl` | `""` | ロゴクリックで開くURL |
 | `_useUpdateDownloadLink` | `false` | 新バージョンのダウンロードリンクを表示する |

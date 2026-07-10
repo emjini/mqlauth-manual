@@ -9,11 +9,11 @@
 //
 // 前提: このファイルをincludeする前に、以下が定義されていること
 //   1. #define MQLAUTH_ID / APPLICATION_NAME / _prefix / HTTP_QUERY_FLAG / VERSION
-//   2. #define PURCHASEURL とカスタマイズ変数群（_useApplicationMessage 等）
+//   2. カスタマイズ変数群（_useApplicationMessage 等）
 //   3. #include <MQLAuth.mqh>
 //
 // 対応: MQL4 / MQL5 両対応（MQLAuth.mqh v1.09以降）
-// Version 1.00 (2026-07-10)
+// Version 1.01 (2026-07-10) - PayPal連携（未使用機能）を削除、内部リファクタ（動作への影響なし）
 //+------------------------------------------------------------------+
 #ifndef __MQLAUTH_BOILERPLATE_MQH__
 #define __MQLAUTH_BOILERPLATE_MQH__
@@ -24,12 +24,26 @@ int TimeHour(datetime t) { MqlDateTime tm; TimeToStruct(t, tm); return tm.hour; 
 #endif
 
 //+------------------------------------------------------------------+
+//|  表示・動作の定数                                                   |
+//+------------------------------------------------------------------+
+#define MQLAUTH_FONT_NAME          "Meiryo" // チャート表示のフォント
+#define MQLAUTH_FONT_SIZE          12       // チャート表示のフォントサイズ
+#define MQLAUTH_LINE_HEIGHT        20       // メッセージ1行の高さ（px）
+#define MQLAUTH_MSG_X_DEFAULT      20       // メッセージ表示のX位置
+#define MQLAUTH_MSG_X_WITH_LOGO    80       // メッセージ表示のX位置（ロゴ表示時）
+#define MQLAUTH_MSG_Y_DEFAULT      20       // メッセージ表示のY位置
+#define MQLAUTH_ZORDER_AUTH_MSG    180      // 認証エラー表示のZオーダー
+#define MQLAUTH_ZORDER_INFO_MSG    8        // 更新通知・体験版表示のZオーダー
+#define MQLAUTH_ZORDER_LOGO        99       // ロゴ表示のZオーダー
+#define MQLAUTH_SECONDS_PER_DAY    86400    // 1日の秒数
+#define MQLAUTH_TIMER_INTERVAL_SEC 1        // 認証成功後のタイマー周期（秒）
+
+//+------------------------------------------------------------------+
 //|  グローバル変数                                                     |
 //+------------------------------------------------------------------+
 //--- 口座認証に利用する変数
 bool _isAuthorized = false; // 口座認証の成否を表す変数
-bool _isAuthed = false;// 口座認証済みかを確認する変数
-datetime _date; // 口座認証を行った時間を保存する変数
+bool _authAttempted = false;// 認証を試行済みかのフラグ（初回のみSYSFAC_Authを呼ぶためのガード）
 int _messageXDistance;
 int _messageYDistance;
 //--- 口座認証に利用する変数
@@ -53,12 +67,9 @@ string _updateurl; // アップデートのお知らせをクリックしたと�
 string _newestVersion;
 //--- アップデートのお知らせに利用する変数
 
-string _downloadurl = "";
 bool _sysfac_isChecked = false;
-datetime sysfac_time;
 datetime _sysfac_indicatorPeriod;//利用期限
 string _randId;// 認証ファイルの名称
-long _AuthTime;//認証した時間
 
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -87,16 +98,6 @@ void sysfac_onchartevent(int id, string sparam) {
          if(_logourl != "") {
             bool result = Auth_OpenURL(_logourl);
          }
-      if(_usePayPal) {
-         if(StringFind(sparam,  _prefix + "objectAuthMessage") >= 0)
-            if(PURCHASEURL != "") {
-               bool result = Auth_OpenURL(PURCHASEURL + "&custom=" + (string)AccountInfoInteger(ACCOUNT_LOGIN));
-               if(!result)
-                  Print("PayPal決済ページを開くのに失敗しました。");
-               else
-                  MessageBox("PayPal決済が済みましたら、期限を更新するため、一度MT4を再起動してください。", "ご注意");
-            }
-      }
    }
 }
 
@@ -105,30 +106,30 @@ void sysfac_onchartevent(int id, string sparam) {
 //+------------------------------------------------------------------+
 void sysfac_onCalc() {
    if(_useLogo)
-      _messageXDistance = 80;
+      _messageXDistance = MQLAUTH_MSG_X_WITH_LOGO;
    else
-      _messageXDistance = 20;
+      _messageXDistance = MQLAUTH_MSG_X_DEFAULT;
 
-   _messageYDistance = 20;
+   _messageYDistance = MQLAUTH_MSG_Y_DEFAULT;
 
    if(_useLogo) {
       string _objectLogo = _prefix + "SYSFAC_LOGO"; // ロゴオブジェクトの名前
       Auth_SYSFACShowBMPIMG("\\Include\\Images\\logo.bmp", _objectLogo, CORNER_LEFT_LOWER);
    }
 
-   if(AccountInfoInteger(ACCOUNT_LOGIN) != 0 && !_isAuthed) {
-      _isAuthed = true;
+   if(AccountInfoInteger(ACCOUNT_LOGIN) != 0 && !_authAttempted) {
+      _authAttempted = true;
       SYSFAC_Auth();
    }
 }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool CheckDLLsAllowed() {
+bool MQLAuth_CheckDLLsAllowed() {
    if(!TerminalInfoInteger(TERMINAL_DLLS_ALLOWED)) {
       int errorcode = 000;//DLL許可なし
       string errormessages = "DLLの使用が許可されていません。,「DLLの使用を許可する」にチェックを入れてください。";
-      ShowErrorMessage(errorcode, errormessages);
+      MQLAuth_ShowErrorMessage(errorcode, errormessages);
       return false;
    }
    return true;
@@ -136,7 +137,7 @@ bool CheckDLLsAllowed() {
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void ShowErrorMessage(int errorcode, string errormessages) {
+void MQLAuth_ShowErrorMessage(int errorcode, string errormessages) {
    string _ObjectAuthMessage1 = _prefix + "objectAuthMessage1"; // 認証メッセージを表示するラベル名1
    string _ObjectAuthMessage2 = _prefix + "objectAuthMessage2"; // 認証メッセージを表示するラベル名2
    string _ObjectAuthMessage3 = _prefix + "objectAuthMessage3"; // 認証メッセージを表示するラベル名3
@@ -151,10 +152,10 @@ void ShowErrorMessage(int errorcode, string errormessages) {
    ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_HIDDEN, true);
    ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_CORNER, CORNER_LEFT_LOWER);
    ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_XDISTANCE, _messageXDistance);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_YDISTANCE, _messageYDistance + 40);
+   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
    ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_TEXT, "[" + APPLICATION_NAME + "] Error:" + (string)errorcode);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_FONTSIZE, 12);
-   ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_FONT, "Meiryo");
+   ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+   ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_FONT, MQLAUTH_FONT_NAME);
    ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
 
    ObjectCreate(ChartID(), _ObjectAuthMessage2, OBJ_LABEL, 0, 0, 0);
@@ -164,10 +165,10 @@ void ShowErrorMessage(int errorcode, string errormessages) {
    ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_HIDDEN, true);
    ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_CORNER, CORNER_LEFT_LOWER);
    ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_XDISTANCE, _messageXDistance);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_YDISTANCE, _messageYDistance + 20);
+   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT);
    ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_TEXT, errormessage[0]);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_FONTSIZE, 12);
-   ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_FONT, "Meiryo");
+   ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+   ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_FONT, MQLAUTH_FONT_NAME);
    ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
 
    ObjectCreate(ChartID(), _ObjectAuthMessage3, OBJ_LABEL, 0, 0, 0);
@@ -179,8 +180,8 @@ void ShowErrorMessage(int errorcode, string errormessages) {
    ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_XDISTANCE, _messageXDistance);
    ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_YDISTANCE, _messageYDistance);
    ObjectSetString(ChartID(), _ObjectAuthMessage3, OBJPROP_TEXT, errormessage[1]);
-   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_FONTSIZE, 12);
-   ObjectSetString(ChartID(), _ObjectAuthMessage3, OBJPROP_FONT, "Meiryo");
+   ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+   ObjectSetString(ChartID(), _ObjectAuthMessage3, OBJPROP_FONT, MQLAUTH_FONT_NAME);
    ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
 }
 //+------------------------------------------------------------------+
@@ -191,7 +192,7 @@ bool SYSFAC_Auth() {
    string _ObjectAuthMessage2 = _prefix + "objectAuthMessage2"; // 認証メッセージを表示するラベル名2
    string _ObjectAuthMessage3 = _prefix + "objectAuthMessage3"; // 認証メッセージを表示するラベル名3
 
-   if(!CheckDLLsAllowed()) return false;
+   if(!MQLAuth_CheckDLLsAllowed()) return false;
 
    string text   = APPLICATION_NAME + TimeToString(TimeCurrent(), TIME_DATE) + (string)AccountInfoInteger(ACCOUNT_LOGIN);
    string keystr = MQLAUTH_ID;
@@ -205,7 +206,7 @@ bool SYSFAC_Auth() {
 
    res = CryptEncode(CRYPT_HASH_SHA256, array_src, array_key, array_dst);
 
-   _randId = ArrayToHex(array_dst);
+   _randId = MQLAuth_ArrayToHex(array_dst);
 
    if(res > 0) {
 
@@ -217,7 +218,7 @@ bool SYSFAC_Auth() {
    int errorcode = 0;
    string errormessages = "";
 
-   if(!FileIsExist("MQLAuth\\" + ArrayToHex(array_dst))) {
+   if(!FileIsExist("MQLAuth\\" + MQLAuth_ArrayToHex(array_dst))) {
       bool result = false;
       if(_useTrial) {
          result = AuthByAccountNumberWithAddUser(MQLAUTH_ID, APPLICATION_NAME, _day, _sysfac_indicatorPeriod, _userMessage, errorcode, errormessages);
@@ -226,7 +227,6 @@ bool SYSFAC_Auth() {
       }
       if(result) {
          if(_sysfac_indicatorPeriod >= TimeLocal()) {
-            _AuthTime = GetTickCount();
             //--- バージョン情報を確認し、更新がある場合はお知らせを表示する
             if(_useUpdateMessage) {
                _newestVersion = Auth_GetNewestVersion(MQLAUTH_ID, APPLICATION_NAME, _updateurl);
@@ -239,7 +239,7 @@ bool SYSFAC_Auth() {
             if(_useUserMessage) {
                StringReplace(_userMessage, "\n", "");
             }
-            CreateFile("MQLAuth\\" + ArrayToHex(array_dst), TimeToString(_sysfac_indicatorPeriod, TIME_DATE | TIME_SECONDS), _newestVersion, _updateurl, _applicationMessage, _userMessage);
+            MQLAuth_CreateCacheFile("MQLAuth\\" + MQLAuth_ArrayToHex(array_dst), TimeToString(_sysfac_indicatorPeriod, TIME_DATE | TIME_SECONDS), _newestVersion, _updateurl, _applicationMessage, _userMessage);
 #ifdef __MQL5__
             MqlDateTime tm;
             TimeToStruct(_sysfac_indicatorPeriod, tm);
@@ -263,40 +263,24 @@ bool SYSFAC_Auth() {
             ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_HIDDEN, true);
             ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_CORNER, CORNER_LEFT_LOWER);
             ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_XDISTANCE, _messageXDistance);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_YDISTANCE, _messageYDistance + 40);
+            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
             ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_TEXT, "[" + _prefix + "]利用期間が終了しました。");
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_ZORDER, 180);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_FONTSIZE, 12);
-            ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_FONT, "Meiryo");
+            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_ZORDER, MQLAUTH_ZORDER_AUTH_MSG);
+            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+            ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_FONT, MQLAUTH_FONT_NAME);
             ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
 
-            if(_usePayPal) {
-               ObjectCreate(ChartID(), _ObjectAuthMessage3, OBJ_LABEL, 0, 0, 0);
-               ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_BACK, false);
-               ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_SELECTABLE, false);
-               ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_SELECTED, false);
-               ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_HIDDEN, true);
-               ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-               ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_XDISTANCE, _messageXDistance);
-               ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_YDISTANCE, _messageYDistance + 20);
-               ObjectSetString(ChartID(), _ObjectAuthMessage3, OBJPROP_TEXT, "引き続きご利用になる場合はこちらをクリックしてください。");
-               ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_ZORDER, 180);
-               ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_FONTSIZE, 12);
-               ObjectSetString(ChartID(), _ObjectAuthMessage3, OBJPROP_FONT, "Meiryo");
-               ObjectSetInteger(ChartID(), _ObjectAuthMessage3, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-            }
             //--- 認証メッセージを表示するラベルの作成 ---
 
             return false;
          }
       } else {
          _isAuthorized = false;
-         ShowErrorMessage(errorcode, errormessages);
+         MQLAuth_ShowErrorMessage(errorcode, errormessages);
          return false;
       }
    } else {
-      _AuthTime = GetTickCount();
-      int filehandle = FileOpen("MQLAuth\\" + ArrayToHex(array_dst), FILE_SHARE_READ | FILE_CSV, ',');
+      int filehandle = FileOpen("MQLAuth\\" + MQLAuth_ArrayToHex(array_dst), FILE_SHARE_READ | FILE_CSV, ',');
       _sysfac_indicatorPeriod = StringToTime(FileReadString(filehandle));
       _newestVersion = FileReadString(filehandle);
       _updateurl = FileReadString(filehandle);
@@ -317,7 +301,7 @@ bool SYSFAC_Auth() {
       Print(APPLICATION_NAME + "利用期限： ", timeYear, "年 ", timeMonth, "月 ", timeDay, "日 まで");
    }
    _isAuthorized = true;
-   EventSetTimer(1);
+   EventSetTimer(MQLAUTH_TIMER_INTERVAL_SEC);
 
    return true;
 }
@@ -355,10 +339,10 @@ void SYSFAC_Message() {
                ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_CORNER, CORNER_LEFT_LOWER);
                ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_ANCHOR, ANCHOR_LEFT_LOWER);
                ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_XDISTANCE, _messageXDistance);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + 20 * (ArraySize(message) - 1 - i));
+               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * (ArraySize(message) - 1 - i));
                ObjectSetString(ChartID(),  _labelApplicationMessage + (string)i, OBJPROP_TEXT, message[i]);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONTSIZE, 12);
-               ObjectSetString(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONT, "Meiryo");
+               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+               ObjectSetString(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONT, MQLAUTH_FONT_NAME);
                ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
             }
             _applicationMessageurl = result[1];
@@ -375,10 +359,10 @@ void SYSFAC_Message() {
                ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_CORNER, CORNER_LEFT_LOWER);
                ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_ANCHOR, ANCHOR_LEFT_LOWER);
                ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_XDISTANCE, _messageXDistance);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + 20 * (ArraySize(message) - 1 - i));
+               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * (ArraySize(message) - 1 - i));
                ObjectSetString(ChartID(),  _labelApplicationMessage + (string)i, OBJPROP_TEXT, message[i]);
-               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONTSIZE, 12);
-               ObjectSetString(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONT, "Meiryo");
+               ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+               ObjectSetString(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_FONT, MQLAUTH_FONT_NAME);
                ObjectSetInteger(ChartID(), _labelApplicationMessage + (string)i, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
             }
             _applicationMessageurl = "";
@@ -414,10 +398,10 @@ void SYSFAC_Message() {
                ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_CORNER, CORNER_LEFT_LOWER);
                ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_ANCHOR, ANCHOR_LEFT_LOWER);
                ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_XDISTANCE, _messageXDistance);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + 20 * (ArraySize(message) - 1 - i));
+               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * (ArraySize(message) - 1 - i));
                ObjectSetString(ChartID(), _labelUserMessage + (string)i, OBJPROP_TEXT, message[i]);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONTSIZE, 12);
-               ObjectSetString(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONT, "Meiryo");
+               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+               ObjectSetString(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONT, MQLAUTH_FONT_NAME);
                ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
             }
             _userMessageurl = result[1];
@@ -434,10 +418,10 @@ void SYSFAC_Message() {
                ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_CORNER, CORNER_LEFT_LOWER);
                ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_ANCHOR, ANCHOR_LEFT_LOWER);
                ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_XDISTANCE, _messageXDistance);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + 20 * (ArraySize(message) - 1 - i));
+               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * (ArraySize(message) - 1 - i));
                ObjectSetString(ChartID(), _labelUserMessage + (string)i, OBJPROP_TEXT, message[i]);
-               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONTSIZE, 12);
-               ObjectSetString(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONT, "Meiryo");
+               ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+               ObjectSetString(ChartID(), _labelUserMessage + (string)i, OBJPROP_FONT, MQLAUTH_FONT_NAME);
                ObjectSetInteger(ChartID(), _labelUserMessage + (string)i, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
             }
             _userMessageurl = "";
@@ -456,11 +440,11 @@ void SYSFAC_Message() {
          ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_HIDDEN, true);
          ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_CORNER, CORNER_LEFT_LOWER);
          ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_XDISTANCE, _messageXDistance);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_YDISTANCE, _messageYDistance + 40);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_ZORDER, 8);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
          ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_TEXT, "[" + APPLICATION_NAME + "]新しいバージョン " + _newestVersion + " があります。");
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_FONTSIZE, 12);
-         ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_FONT, "Meiryo");
+         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+         ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_FONT, MQLAUTH_FONT_NAME);
          ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
          if(_useUpdateDownloadLink){
             ObjectCreate(ChartID(), _labelUpdateMessage2, OBJ_LABEL, 0, 0, 0);
@@ -469,42 +453,28 @@ void SYSFAC_Message() {
             ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_HIDDEN, true);
             ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_CORNER, CORNER_LEFT_LOWER);
             ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_XDISTANCE, _messageXDistance);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_YDISTANCE, _messageYDistance + 20);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_ZORDER, 8);
+            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT);
+            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
             ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_TEXT, "ダウンロードするにはここをクリック");
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_FONTSIZE, 12);
-            ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_FONT, "Meiryo");
+            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+            ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_FONT, MQLAUTH_FONT_NAME);
             ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
          }
-      } else if(_sysfac_indicatorPeriod - _day * 86400 <= TimeLocal()) {
+      } else if(_sysfac_indicatorPeriod - _day * MQLAUTH_SECONDS_PER_DAY <= TimeLocal()) {
          ObjectCreate(ChartID(), _ObjectAuthMessage1, OBJ_LABEL, 0, 0, 0);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTABLE, false);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTED, false);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_HIDDEN, true);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_CORNER, CORNER_LEFT_LOWER);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_XDISTANCE, _messageXDistance);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_YDISTANCE, _messageYDistance + 40);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_ZORDER, 8);
+         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
+         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
          string date = TimeToString(_sysfac_indicatorPeriod, TIME_DATE | TIME_SECONDS);
          StringReplace(date, ".", "/");
          ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_TEXT, "[" + APPLICATION_NAME + "体験版] 利用期限： " + date);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_FONTSIZE, 12);
-         ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_FONT, "Meiryo");
+         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+         ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_FONT, MQLAUTH_FONT_NAME);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-         if(PURCHASEURL != ""){
-            ObjectCreate(ChartID(), _ObjectAuthMessage2, OBJ_LABEL, 0, 0, 0);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_SELECTABLE, false);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_SELECTED, false);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_HIDDEN, true);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_XDISTANCE, _messageXDistance);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_YDISTANCE, _messageYDistance + 20);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_ZORDER, 8);
-            ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_TEXT, "ご購入はここをクリック");
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_FONTSIZE, 12);
-            ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_FONT, "Meiryo");
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-         }
       } else {
       }
    } else if(!_useUserMessage && _viewApplicationMessageTime != 0 && GetTickCount() - _viewApplicationMessageTime > _applicationMessageViewSecond * 1000) {
@@ -516,11 +486,11 @@ void SYSFAC_Message() {
          ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_HIDDEN, true);
          ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_CORNER, CORNER_LEFT_LOWER);
          ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_XDISTANCE, _messageXDistance);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_YDISTANCE, _messageYDistance + 40);
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_ZORDER, 8);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
+         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
          ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_TEXT, "[" + APPLICATION_NAME + "]新しいバージョン " + _newestVersion + " があります。");
-         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_FONTSIZE, 12);
-         ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_FONT, "Meiryo");
+         ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+         ObjectSetString(ChartID(), _labelUpdateMessage, OBJPROP_FONT, MQLAUTH_FONT_NAME);
          ObjectSetInteger(ChartID(), _labelUpdateMessage, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
          if(_useUpdateDownloadLink){
             ObjectCreate(ChartID(), _labelUpdateMessage2, OBJ_LABEL, 0, 0, 0);
@@ -529,49 +499,34 @@ void SYSFAC_Message() {
             ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_HIDDEN, true);
             ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_CORNER, CORNER_LEFT_LOWER);
             ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_XDISTANCE, _messageXDistance);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_YDISTANCE, _messageYDistance + 20);
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_ZORDER, 8);
+            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT);
+            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
             ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_TEXT, "ダウンロードするにはここをクリック");
-            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_FONTSIZE, 12);
-            ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_FONT, "Meiryo");
+            ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+            ObjectSetString(ChartID(), _labelUpdateMessage2, OBJPROP_FONT, MQLAUTH_FONT_NAME);
             ObjectSetInteger(ChartID(), _labelUpdateMessage2, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
          }
-      } else if(_sysfac_indicatorPeriod - _day * 86400 <= TimeLocal()) {
+      } else if(_sysfac_indicatorPeriod - _day * MQLAUTH_SECONDS_PER_DAY <= TimeLocal()) {
          ObjectCreate(ChartID(), _ObjectAuthMessage1, OBJ_LABEL, 0, 0, 0);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTABLE, false);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_SELECTED, false);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_HIDDEN, true);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_CORNER, CORNER_LEFT_LOWER);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_XDISTANCE, _messageXDistance);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_YDISTANCE, _messageYDistance + 40);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_ZORDER, 8);
+         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_YDISTANCE, _messageYDistance + MQLAUTH_LINE_HEIGHT * 2);
+         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_ZORDER, MQLAUTH_ZORDER_INFO_MSG);
          string date = TimeToString(_sysfac_indicatorPeriod, TIME_DATE | TIME_SECONDS);
          StringReplace(date, ".", "/");
          ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_TEXT, "[" + APPLICATION_NAME + "体験版] 利用期限： " + date);
-         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_FONTSIZE, 12);
-         ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_FONT, "Meiryo");
+         ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_FONTSIZE, MQLAUTH_FONT_SIZE);
+         ObjectSetString(ChartID(), _ObjectAuthMessage1, OBJPROP_FONT, MQLAUTH_FONT_NAME);
          ObjectSetInteger(ChartID(), _ObjectAuthMessage1, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-         if(PURCHASEURL != ""){
-            ObjectCreate(ChartID(), _ObjectAuthMessage2, OBJ_LABEL, 0, 0, 0);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_SELECTABLE, false);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_SELECTED, false);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_HIDDEN, true);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_CORNER, CORNER_LEFT_LOWER);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_XDISTANCE, _messageXDistance);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_YDISTANCE, _messageYDistance + 20);
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_ZORDER, 8);
-            ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_TEXT, "ご購入はここをクリック");
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_FONTSIZE, 12);
-            ObjectSetString(ChartID(), _ObjectAuthMessage2, OBJPROP_FONT, "Meiryo");
-            ObjectSetInteger(ChartID(), _ObjectAuthMessage2, OBJPROP_COLOR, (color)ChartGetInteger(ChartID(), CHART_COLOR_FOREGROUND));
-         }
       } else {
       }
    }
    if(_sysfac_indicatorPeriod <= TimeLocal()) {
       if(FileIsExist("MQLAuth\\" + _randId)) {
          FileDelete("MQLAuth\\" + _randId);
-         _AuthTime = 4294967295;
       }
    }
 }
@@ -585,7 +540,7 @@ bool AuthByAccountNumber(string ManagerName, string ApplicationName, datetime &p
    string url = _url + "an?name=" + ManagerName + "&appname=" + ApplicationName + "&accountno=" + (string)AccountInfoInteger(ACCOUNT_LOGIN);
    string result = AccessToInternetGetMethod(url, NULL);
    if(result == "") {
-      errorcode = 200;//パスワード未入力
+      errorcode = 200;//サーバ接続失敗
       errormessage = "サーバとの接続に失敗しました。,ネットワークの接続を確認してください。";
       period = 0;
       return false;
@@ -594,7 +549,7 @@ bool AuthByAccountNumber(string ManagerName, string ApplicationName, datetime &p
    CJAVal json;
    json.Deserialize(result);
    if(json["status"].ToStr() == "429") {
-      errorcode = 300;//パスワード未入力
+      errorcode = 300;//認証アクセス過多（30回/60秒制限）
       errormessage = "認証アクセス過多です。,時間を置いてから、再度インジケーターを挿入してください。";
       period = 0;
       return false;
@@ -624,7 +579,7 @@ bool AuthByAccountNumberWithAddUser(string ManagerName, string ApplicationName, 
    string url = _url + "tr?name=" + ManagerName + "&appname=" + ApplicationName + "&accountno=" + (string)AccountInfoInteger(ACCOUNT_LOGIN) + "&period=" + (string)day;
    string result = AccessToInternetGetMethod(url, NULL);
    if(result == "") {
-      errorcode = 200;//パスワード未入力
+      errorcode = 200;//サーバ接続失敗
       errormessage = "サーバとの接続に失敗しました。,ネットワークの接続を確認してください。";
       period = 0;
       return false;
@@ -633,7 +588,7 @@ bool AuthByAccountNumberWithAddUser(string ManagerName, string ApplicationName, 
    CJAVal json;
    json.Deserialize(result);
    if(json["status"].ToStr() == "429") {
-      errorcode = 300;//パスワード未入力
+      errorcode = 300;//認証アクセス過多（30回/60秒制限）
       errormessage = "認証アクセス過多です。,時間を置いてから、再度インジケーターを挿入してください。";
       period = 0;
       return false;
@@ -659,7 +614,7 @@ bool AuthByAccountNumberWithAddUser(string ManagerName, string ApplicationName, 
 }
 
 //+------------------------------------------------------------------+
-void CreateFile(string m_filename, string period, string m_text1, string m_text2, string m_text3, string m_text4) {
+void MQLAuth_CreateCacheFile(string m_filename, string period, string m_text1, string m_text2, string m_text3, string m_text4) {
    int handle;
    handle = FileOpen(m_filename, FILE_READ | FILE_WRITE, ",");
    if(handle > 0) {
@@ -670,7 +625,7 @@ void CreateFile(string m_filename, string period, string m_text1, string m_text2
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-string ArrayToHex(uchar &arr[], int count = -1) {
+string MQLAuth_ArrayToHex(uchar &arr[], int count = -1) {
    string res = "";
    if(count < 0 || count > ArraySize(arr)) {
       count = ArraySize(arr);
@@ -683,7 +638,7 @@ string ArrayToHex(uchar &arr[], int count = -1) {
    return(res);
 }
 //+------------------------------------------------------------------+
-void Auth_SYSFACShowBMPIMG(string imgpath, string imgname, ENUM_BASE_CORNER m_corner = 0, int xdistance = 20, int ydistance = 20, int zorder = 99) {
+void Auth_SYSFACShowBMPIMG(string imgpath, string imgname, ENUM_BASE_CORNER m_corner = 0, int xdistance = 20, int ydistance = 20, int zorder = MQLAUTH_ZORDER_LOGO) {
    ObjectCreate(ChartID(), imgname, OBJ_BITMAP_LABEL, 0, 0, 0);
    ObjectSetString(ChartID(), imgname, OBJPROP_BMPFILE, "::" + StringSubstr(imgpath, 1));
    ObjectSetInteger(ChartID(), imgname, OBJPROP_BACK, false);
