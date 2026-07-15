@@ -8,7 +8,7 @@ originalUrl: https://manual.mql-auth.com/docs/manual/manual03/section01/
 
 ## ステップ1 MQLAuthにアクセス
 
-https://mql-auth.com/にアクセスし、サイト右上の「無料で始める」をクリックします。
+<https://mql-auth.com/> にアクセスし、サイト右上の「無料で始める」をクリックします。
 
 ![](/images/v2/lp-top.png)
 
