@@ -8,7 +8,7 @@ originalUrl: https://manual.mql-auth.com/docs/reference/enum/mqlauthenum_gmtoffs
 
 ## GMTオフセットタイプ
 
-MT4時間と日本時間の切り替えはAuth\_ServerTimeToJapanTime()関数や[Auth\_JapanTimeToServerTime(](https://mql-auth.com/Home/Manual#ref14))関数を使用します。
+MT4時間と日本時間の切り替えはAuth\_ServerTimeToJapanTime()関数や[Auth\_JapanTimeToServerTime()](https://mql-auth.com/Home/Manual#ref14)関数を使用します。
 
 これらの関数はMQLAUTHENUM\_GMTOFFSET列挙の値を使用しGMTオフセットを指定する必要があります。
 
