@@ -51,8 +51,8 @@ DateTimet型の日本時間を返します。
 
 ##### MQLAUTHENUM\_GMTOFFSET型についてはこちらを参照してください。
 
-> [MQLAUTHENUM\_GMTOFFSET列挙型](https://manual.mql-auth.com/docs/reference/enum/mqlauthenum_gmtoffset/)
+> [MQLAUTHENUM\_GMTOFFSET列挙型](/reference/enum/mqlauthenum_gmtoffset)
 
 ##### MQLAUTHENUM\_SUMMERTIMECOUNTRY型についてはこちらを参照してください。
 
-> [MQLAUTHENUM\_SUMMERTIMECOUNTRY列挙型](https://manual.mql-auth.com/docs/reference/enum/mqlauthenum_summertimecountry/)
+> [MQLAUTHENUM\_SUMMERTIMECOUNTRY列挙型](/reference/enum/mqlauthenum_summertimecountry)

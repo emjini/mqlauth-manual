@@ -14,4 +14,4 @@ IB目的のEA等で利用者自身による口座変更をさせたくない場�
 
 ##### こちらの記事で具体的な使い方を解説しています。
 
-> [EA利用者等自身で口座番号を変更する手順](https://manual.mql-auth.com/docs/practicalmanual/userfunction/userfunction01/)
+> [EA利用者等自身で口座番号を変更する手順](/advanced/userfunction/userfunction01)

@@ -25,6 +25,6 @@ MT4の場合
 MT5の場合  
 　　　[MT5のファイル保存フォルダ]/MQL5/Include/
 
-[<< 前の項目 MQLAuthにEAを登録](https://manual.mql-auth.com/docs/rogan-documentation/manual03/section02/)
+[<< 前の項目 MQLAuthにEAを登録](/manual/manual03/section02)
 
-[次の項目 EAのソースコードに認証用のコードを追加 >>](https://manual.mql-auth.com/docs/rogan-documentation/manual03/section04/)
+[次の項目 EAのソースコードに認証用のコードを追加 >>](/manual/manual03/section04)

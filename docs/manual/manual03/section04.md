@@ -74,6 +74,6 @@ OnTimer()がない場合は、以下のソースコードを追加します。
 
 MQLソースコードの追加は以上です。
 
-[<< 前の項目 MQLAuthインクルードファイルのダウンロード](https://manual.mql-auth.com/docs/rogan-documentation/manual03/section03/)
+[<< 前の項目 MQLAuthインクルードファイルのダウンロード](/manual/manual03/section03)
 
-[次の項目 MQLAuthに口座縛りをする口座番号を登録 >>](https://manual.mql-auth.com/docs/rogan-documentation/manual03/section05/)
+[次の項目 MQLAuthに口座縛りをする口座番号を登録 >>](/manual/manual03/section05)
