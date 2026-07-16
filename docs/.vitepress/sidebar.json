@@ -10,6 +10,26 @@
           "link": "/advanced/webservicemanual/",
           "items": [
             {
+              "text": "新しい管理画面（ダッシュボード）",
+              "link": "/advanced/webservicemanual/dashboard"
+            },
+            {
+              "text": "ユーザー管理",
+              "link": "/advanced/webservicemanual/users"
+            },
+            {
+              "text": "EA・インジケーターの管理",
+              "link": "/advanced/webservicemanual/applications"
+            },
+            {
+              "text": "アクセス統計の見方",
+              "link": "/advanced/webservicemanual/access"
+            },
+            {
+              "text": "料金プラン",
+              "link": "/advanced/webservicemanual/plans"
+            },
+            {
               "text": "登録メールアドレスの変更方法",
               "link": "/advanced/webservicemanual/web002"
             },
