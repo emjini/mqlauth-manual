@@ -196,6 +196,10 @@
               "link": "/manual/manual03/ai-implementation"
             },
             {
+              "text": "カスタマイズ変数の設定",
+              "link": "/manual/manual03/customize"
+            },
+            {
               "text": "MQLAuthに口座縛りをする口座番号を登録",
               "link": "/manual/manual03/section05"
             }
